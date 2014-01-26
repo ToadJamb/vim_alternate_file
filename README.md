@@ -31,7 +31,7 @@ Add the following to your .vimrc to add a keybinding using your leader key:
 
 Add the following to your .vimrc to add a keybinding using a custom vim command:
 
-		command af :execute af:OpenAlternate()
+		command AF :execute af:OpenAlternate()
 
 
 Notes
