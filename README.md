@@ -19,7 +19,7 @@ Installation
 When using [Vundle](https://github.com/gmarik/vundle), simply add
 the following line to your .vimrc:
 
-		Bundle 'ToadJamb/vim-alternate-file'
+	Plugin 'ToadJamb/vim_alternate_file'
 
 
 Usage
@@ -27,17 +27,17 @@ Usage
 
 Add the following to your .vimrc to add a keybinding using your leader key:
 
-		map <silent> <leader>s :call af:OpenAlternate()<CR>
+	map <silent> <leader>s :call alternate_file:OpenAlternate()<CR>
 
 Add the following to your .vimrc to add a keybinding using a custom vim command:
 
-		command AF :execute af:OpenAlternate()
+	command AF :execute alternate_file:OpenAlternate()
 
 
 Notes
 -----
 
 The canonical repo for this plugin lives
-[here](https://www.bitbucket.org/ToadJamb/vim-alternate-file), NOT on github.
+[here](https://www.bitbucket.org/ToadJamb/vim_alternate_file), NOT on github.
 It is on github only to ease use of installation via
 [Vundle](https://github.com/gmarik/vundle).
