@@ -1,6 +1,6 @@
 " File:          alternate_file.vim
 " Author:        Travis Herrick
-" Version:       0.2
+" Version:       0.0.2
 " Description:   Open a spec/class based on the current file.
 
 function! alternate_file:OpenAlternate()
