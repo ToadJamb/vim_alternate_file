@@ -1,33 +1,24 @@
 " File:          alternate_file.vim
 " Author:        Travis Herrick
-" Version:       0.0.2
+" Version:       0.0.3
 " Description:   Open a spec/class based on the current file.
 
-function! alternate_file:OpenAlternate()
+function! OpenAlternateFile()
   let root = substitute(expand('%:h'), '/.*', '', '')
 
   if root == 'spec'
-    execute l:OpenClass()
+    execute s:OpenClass()
   else
-    execute l:OpenSpec()
+    execute s:OpenSpec()
   endif
 endfunction
 
-function! af:OpenAlternate()
-  let message = 'af:OpenAlternate() is being deprecated. '
-  let message = message . 'Please use alternate_file:OpenAlternate() instead.'
-
-  echoerr message
-
-  execute alternate_file:OpenAlternate()
-endfunction
-
-function! l:OpenSpec()
+function! s:OpenSpec()
   let buffer = 'spec/' . expand('%:r') . '_spec.' . expand('%:e')
   execute 'vsplit ' . buffer
 endfunction
 
-function! l:OpenClass()
+function! s:OpenClass()
   let buffer = expand('%')
   let buffer = substitute(buffer, '_spec\.', '.', '')
   let buffer = substitute(buffer, '^spec/', '', '')

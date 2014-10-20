@@ -27,11 +27,11 @@ Usage
 
 Add the following to your .vimrc to add a keybinding using your leader key:
 
-	map <silent> <leader>s :call alternate_file:OpenAlternate()<CR>
+	map <silent> <leader>s :call OpenAlternateFile()<CR>
 
 Add the following to your .vimrc to add a keybinding using a custom vim command:
 
-	command AF :execute alternate_file:OpenAlternate()
+	command AF :execute OpenAlternateFile()
 
 
 Notes
