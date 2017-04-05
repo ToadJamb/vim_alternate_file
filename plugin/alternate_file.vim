@@ -18,7 +18,6 @@
 "\
 "\}
 
-
 let s:loaded = 0
 let g:alternate_file_config = {
 \ 'spec': {
@@ -33,6 +32,12 @@ let g:alternate_file_config = {
 \
 \
 \}
+
+function! s:SID()
+  let fullname = expand("<sfile>")
+  return matchstr(fullname, '<SNR>\d\+_')
+endfunction
+let g:alternate_file_sid = s:SID()
 
 function! OpenAlternateFile()
   let root = substitute(expand('%:h'), '/.*', '', '')

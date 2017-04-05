@@ -1,0 +1,3 @@
+./spec/alternate_file_spec.vim|1| assertion failed: true -- exception thrown: Vim(let):E121: Undefined variable: true at: /tmp/vS9S3hJ/0, line 2
+???|2| called from {0}[2]
+./spec/alternate_file_spec.vim|| SUITE<alternate_file_spec> 0/0 tests successfully executed.
