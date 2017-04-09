@@ -14,12 +14,11 @@ Alternate files are currently opened in a vertical split.
 Installation
 ------------
 
-[Vundle](https://github.com/gmarik/vundle) is recommended for plugin management.
+[Vundle][vundle] is recommended for plugin management.
 
-When using [Vundle](https://github.com/gmarik/vundle), simply add
-the following line to your .vimrc:
+When using [Vundle][vundle], simply add the following line to your .vimrc:
 
-	Plugin 'ToadJamb/vim_alternate_file'
+		Plugin 'ToadJamb/vim_alternate_file'
 
 
 Usage
@@ -27,17 +26,19 @@ Usage
 
 Add the following to your .vimrc to add a keybinding using your leader key:
 
-	map <silent> <leader>s :call OpenAlternateFile()<CR>
+		map <silent> <leader>s :call OpenAlternateFile()<CR>
 
 Add the following to your .vimrc to add a keybinding using a custom vim command:
 
-	command AF :execute OpenAlternateFile()
+		command AF :execute OpenAlternateFile()
 
 
 Notes
 -----
 
-The canonical repo for this plugin lives
-[here](https://www.bitbucket.org/ToadJamb/vim_alternate_file), NOT on github.
-It is on github only to ease use of installation via
-[Vundle](https://github.com/gmarik/vundle).
+The canonical repo for this plugin lives [here][alternate-file], NOT on github.
+It is on github only to ease use of installation via [Vundle][vundle].
+
+
+[vundle]:         https://github.com/gmarik/vundle
+[alternate-file]: https://www.bitbucket.org/ToadJamb/vim-alternate-file
