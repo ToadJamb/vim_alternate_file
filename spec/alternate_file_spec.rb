@@ -1,89 +1,55 @@
 require 'spec_helper'
 require 'fileutils'
-
-RSpec.shared_context 'plain', :plain do
-  let(:command) { "\\\"#{fx}\\\"" }
-end
-
-RSpec.shared_context 'vim', :vim do
-  subject { output.first }
-
-  let(:command) { "sid . \\\"#{fx}(#{fx_args})\\\"" }
-  let (:output) { [] }
-  let(:verbose) { true }
-  let(:args)    { '' }
-
-  def run_command
-    FileUtils.rm 'spec/out.txt' if File.file?('spec/out.txt')
-
-    puts cmd if verbose
-    system cmd
-
-    File.open('spec/out.txt') do |file|
-      file.each_line.with_index do |line, i|
-        next unless i > 1
-
-        val = eval(line.chomp)
-        #val = val.to_i if val.to_i.to_s == val
-        #val = val.to_f if val.to_f.to_s == val
-
-        output << val
-      end
-    end
-    FileUtils.rm 'spec/out.txt' if File.file?('spec/out.txt')
-
-    if verbose
-      puts '-' * 80
-      puts output
-      puts '-' * 80
-    end
-
-    msg = "expected exactly one line (got #{output.count}):\n" +
-      cmd + "\n" +
-      '-' * 80 + "\n" +
-      output.join("\n")
-    expect(output.count).to eq(1), msg
-  end
-
-  private
-
-  def cmd
-    return @cmd if defined?(@cmd)
-
-    subs =
-      if command.match(/\%s/)
-        command % args
-      else
-        command
-      end
-
-    cmds = [
-      'redir @a',
-      'let sid = g:alternate_file_sid',
-      "let command = #{subs}",
-      "execute 'let val = ' . command",
-      "echo val",
-      'put = @a',
-      'w! >> spec/out.txt',
-      'qall!',
-    ].flatten.map do |cmd|
-      "\"+#{cmd}\""
-    end.join ' '
-
-    @cmd = "vi -u spec/.vimrc #{cmds}"
-  end
-end
-
-RSpec.configure do |rspec|
-  rspec.include_context 'vim', :vim
-  rspec.include_context 'plain', :plain
-end
+require 'pp'
 
 RSpec.describe 'VimAlternateFile', :vim do
+  #let(:verbose) { true }
+  let(:config) { @config }
+
+  before(:all) do
+    out = run("'g:alternate_file_config'")
+    @config = out.last
+  end
+
+  describe 'to_dict' do
+    shared_examples 'to_dict' do |hash, expected|
+      subject { to_dict hash }
+
+      context "given #{hash}" do
+        it "returns #{expected}" do
+          expect(subject).to eq expected
+        end
+      end
+    end
+
+    it_behaves_like 'to_dict', {foo: 'bar'}, "{'foo':'bar'}"
+    it_behaves_like 'to_dict',
+      {foo: 'bar', fizz: 'buzz'},
+      "{'foo':'bar','fizz':'buzz'}"
+    it_behaves_like 'to_dict',
+      {a: 'b', c: {d: 'e', f: 'g'}},
+      "{'a':'b','c':{'d':'e','f':'g'}}"
+  end
+
+  describe '.subdirs' do
+    let(:fx) { 'subdirs' }
+
+    before { run_command }
+
+    it 'returns paths with a trailing slash' do
+      expect(subject.count).to be > 1
+
+      subject.each do |path|
+        expect(path).to match(/\/$/)
+      end
+    end
+  end
+
   describe '.is_spec_folder' do
     let(:fx)      { 'is_spec_folder' }
     let(:fx_args) { "'%s'" }
 
+    # deprecated, but keeping for example of plain context
     context 'relies on globpath output', :plain do
       let(:fx)  { "split(globpath(getcwd(), '*/'), '\n')" }
 
@@ -109,25 +75,28 @@ RSpec.describe 'VimAlternateFile', :vim do
       end
     end
 
-    it_behaves_like 'is_spec_folder', '/spec/', 1
+    it_behaves_like 'is_spec_folder', '/spec/',  1
     it_behaves_like 'is_spec_folder', 'x/spec/', 1
     it_behaves_like 'is_spec_folder', '/spec/x', 0
     it_behaves_like 'is_spec_folder', '/xspec/', 0
     it_behaves_like 'is_spec_folder', '/specx/', 0
 
+    it_behaves_like 'is_spec_folder', '/sPec/',  1
+    it_behaves_like 'is_spec_folder', 'x/sPec/', 1
+    it_behaves_like 'is_spec_folder', '/sPec/x', 0
+    it_behaves_like 'is_spec_folder', '/xsPec/', 0
+    it_behaves_like 'is_spec_folder', '/sPecx/', 0
 
+    it_behaves_like 'is_spec_folder', '/test/',  1
+    it_behaves_like 'is_spec_folder', 'x/test/', 1
+    it_behaves_like 'is_spec_folder', '/test/x', 0
+    it_behaves_like 'is_spec_folder', '/xtest/', 0
+    it_behaves_like 'is_spec_folder', '/testx/', 0
 
-
-
-
-
-
-    #it_behaves_like 'is_spec_folder', '/spec', 0
-    #it_behaves_like 'is_spec_folder', 'spec', 0
-    #it_behaves_like 'is_spec_folder', 'spec/', 0
-
-
-    #it_behaves_like 'is_spec_folder', '/xspec/', 0
-    #it_behaves_like 'is_spec_folder', '/specx/', 0
+    it_behaves_like 'is_spec_folder', '/tEst/',  1
+    it_behaves_like 'is_spec_folder', 'x/tEst/', 1
+    it_behaves_like 'is_spec_folder', '/tEst/x', 0
+    it_behaves_like 'is_spec_folder', '/xtEst/', 0
+    it_behaves_like 'is_spec_folder', '/tjstx/', 0
   end
 end

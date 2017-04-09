@@ -20,24 +20,31 @@
 
 let s:loaded = 0
 let g:alternate_file_config = {
+\ 'app_folders': ['app', 'src', 'lib'],
+\ 'spec_folders': ['spec', 'specs', 'test', 'tests'],
 \ 'spec': {
 \   'paths': [],
 \   'roots': [],
 \ },
-\
-\
-\
-\
-\
-\
-\
+\ 'rules': {
+\   'base': {
+\     'pattern': '%f%s.%e',
+\     'suffix': '_spec',
+\   },
+\   '.es6': {
+\     'suffix': 'Spec',
+\     'exts': [
+\       'es6',
+\       'js',
+\     ],
+\   },
+\   '.js': {
+\     'exts': [
+\       'js',
+\     ],
+\   },
+\ },
 \}
-
-function! s:SID()
-  let fullname = expand("<sfile>")
-  return matchstr(fullname, '<SNR>\d\+_')
-endfunction
-let g:alternate_file_sid = s:SID()
 
 function! OpenAlternateFile()
   let root = substitute(expand('%:h'), '/.*', '', '')
@@ -49,12 +56,23 @@ function! OpenAlternateFile()
     return
   endif
 
-  "if root == config.spec.roots
+  "if s:is_spec(root)
   "  call s:OpenClass(config)
   "else
     call s:OpenSpec(config)
   "endif
 endfunction
+
+"function! s:is_spec(path)
+"  echom a:path
+"  return 0
+"endfunction
+
+function! s:SID()
+  let fullname = expand('<sfile>')
+  return matchstr(fullname, '<SNR>\d\+_')
+endfunction
+let g:alternate_file_sid = s:SID()
 
 function! s:OpenSpec(config)
   let buffer = 'spec/' . expand('%:r') . '_spec.' . expand('%:e')
@@ -69,11 +87,23 @@ function! s:OpenSpec(config)
   endfor
 
   if len(list) == 0
-    execute 'vsplit ' . buffer
+    let default = s:default_spec_file_for(config, buffer)
+    execute 'vsplit' . default
   endif
 endfunction
 
-function! s:OpenClass()
+function! s:spec_patterns_for(file, config)
+  return a:file
+endfunction
+
+function! s:default_spec_file_for(config, path)
+  echo config
+endfunction
+
+function! s:open_default_spec(config, buffer)
+endfunction
+
+function! s:OpenClass(config)
   let buffer = expand('%')
   let buffer = substitute(buffer, '_spec\.', '.', '')
   let buffer = substitute(buffer, '^spec/', '', '')
@@ -109,8 +139,12 @@ function! s:load_config(config)
   let s:loaded += 1
 endfunction
 
+function s:subdirs()
+  return split(globpath(getcwd(), '*/'), '\n')
+endfunction
+
 function s:load_spec_paths(config)
-  let paths = split(globpath(getcwd(), '*/'), '\n')
+  let paths = s:subdirs()
   let paths = filter(paths, 's:is_spec_folder(v:val)')
 
   for path in paths
@@ -148,5 +182,5 @@ function! s:project_file()
 endfunction
 
 function! s:is_spec_folder(path)
-  return a:path =~ '/specs\?/$' || a:path =~ '/tests\?/$'
+  return a:path =~? '/specs\?/$' || a:path =~? '/tests\?/$'
 endfunction

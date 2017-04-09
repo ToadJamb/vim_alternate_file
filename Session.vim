@@ -92,10 +92,10 @@ nmap ySs <Plug>YSsurround
 nmap yss <Plug>Yssurround
 nmap yS <Plug>YSurround
 nmap ys <Plug>Ysurround
-nnoremap <silent> <Plug>(RepeatRedo) :call repeat#wrap("\<C-R>",v:count)
-nnoremap <silent> <Plug>(RepeatUndoLine) :call repeat#wrap('U',v:count)
-nnoremap <silent> <Plug>(RepeatUndo) :call repeat#wrap('u',v:count)
 nnoremap <silent> <Plug>(RepeatDot) :exe repeat#run(v:count)
+nnoremap <silent> <Plug>(RepeatUndo) :call repeat#wrap('u',v:count)
+nnoremap <silent> <Plug>(RepeatUndoLine) :call repeat#wrap('U',v:count)
+nnoremap <silent> <Plug>(RepeatRedo) :call repeat#wrap("\<C-R>",v:count)
 smap <S-Tab> <Plug>snipMateBack
 vnoremap <silent> <Plug>NetrwBrowseXVis :call netrw#BrowseXVis()
 nnoremap <silent> <Plug>NetrwBrowseX :call netrw#BrowseX(expand((exists("g:netrw_gx")? g:netrw_gx : '<cfile>')),netrw#CheckIfRemote())
@@ -146,17 +146,20 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
 endif
 set shortmess=aoO
 badd +1 plugin/alternate_file.vim
-badd +1 spec/alternate_file_spec.vim
+badd +15 spec/alternate_file_spec.vim
 badd +1 ~/.vim_alternate_file.test_runner.yaml
 badd +1 ~/.test_runner.yaml
 badd +1 ~/.vim/bundle/vim_test_runner/plugin/test_runner.vim
 badd +1 spec.txt
-badd +0 \?\?\?
+badd +1 \?\?\?
+badd +154 spec/alternate_file_spec.rb
+badd +1 spec/spec_helper.rb
+badd +36 spec/support/vim_context.rb
 argglobal
 silent! argdel *
 argadd plugin/alternate_file.vim
 set stal=2
-edit spec/alternate_file_spec.vim
+edit spec/alternate_file_spec.rb
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
@@ -166,28 +169,18 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe 'vert 1resize ' . ((&columns * 122 + 122) / 244)
-exe 'vert 2resize ' . ((&columns * 121 + 122) / 244)
+exe 'vert 1resize ' . ((&columns * 121 + 122) / 244)
+exe 'vert 2resize ' . ((&columns * 122 + 122) / 244)
 argglobal
-let s:cpo_save=&cpo
-set cpo&vim
-imap <buffer> <F7> <Plug>UTMake
-vnoremap <buffer> <silent> [" :exe "normal! gv"|call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")
-nnoremap <buffer> <silent> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")
-vnoremap <buffer> <silent> [] m':exe "normal! gv"|call search('^\s*endf*\%[unction]\>', "bW")
-nnoremap <buffer> <silent> [] m':call search('^\s*endf*\%[unction]\>', "bW")
-vnoremap <buffer> <silent> [[ m':exe "normal! gv"|call search('^\s*fu\%[nction]\>', "bW")
-nnoremap <buffer> <silent> [[ m':call search('^\s*fu\%[nction]\>', "bW")
-vnoremap <buffer> <silent> ]" :exe "normal! gv"|call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")
-nnoremap <buffer> <silent> ]" :call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")
-vnoremap <buffer> <silent> ][ m':exe "normal! gv"|call search('^\s*endf*\%[unction]\>', "W")
-nnoremap <buffer> <silent> ][ m':call search('^\s*endf*\%[unction]\>', "W")
-vnoremap <buffer> <silent> ]] m':exe "normal! gv"|call search('^\s*fu\%[nction]\>', "W")
-nnoremap <buffer> <silent> ]] m':call search('^\s*fu\%[nction]\>', "W")
-nmap <buffer> <F7> <Plug>UTMake
-vmap <buffer> <F7> <Plug>UTMake
-let &cpo=s:cpo_save
-unlet s:cpo_save
+nnoremap <buffer> <silent> g} :exe        "ptjump =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> } :exe          "ptag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g] :exe      "stselect =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g :exe        "stjump =RubyCursorIdentifier()"
+nnoremap <buffer> <silent>  :exe v:count1."stag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> ] :exe v:count1."stag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent>  :exe  v:count1."tag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g] :exe       "tselect =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g :exe         "tjump =RubyCursorIdentifier()"
 setlocal keymap=
 setlocal noarabic
 setlocal noautoindent
@@ -203,8 +196,8 @@ setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
 setlocal cinoptions=
 setlocal cinwords=if,else,while,do,for,switch
 setlocal colorcolumn=
-setlocal comments=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"
-setlocal commentstring=\"%s
+setlocal comments=:#
+setlocal commentstring=#\ %s
 setlocal complete=.,w,b,u,t,i
 setlocal concealcursor=
 setlocal conceallevel=0
@@ -215,14 +208,14 @@ setlocal nocursorbind
 setlocal nocursorcolumn
 set cursorline
 setlocal cursorline
-setlocal define=
+setlocal define=^\\s*#\\s*define
 setlocal dictionary=
 setlocal nodiff
 setlocal equalprg=
 setlocal errorformat=
 setlocal expandtab
-if &filetype != 'vim'
-setlocal filetype=vim
+if &filetype != 'ruby'
+setlocal filetype=ruby
 endif
 setlocal fixendofline
 setlocal foldcolumn=0
@@ -243,13 +236,13 @@ setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
 setlocal grepprg=
 setlocal iminsert=0
 setlocal imsearch=0
-setlocal include=
-setlocal includeexpr=
-setlocal indentexpr=GetVimIndent()
-setlocal indentkeys=0{,0},:,0#,!^F,o,O,e,=end,=else,=cat,=fina,=END,0\\
+setlocal include=^\\s*\\<\\(load\\>\\|require\\>\\|autoload\\s*:\\=[\"']\\=\\h\\w*[\"']\\=,\\)
+setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.rb','')
+setlocal indentexpr=GetRubyIndent(v:lnum)
+setlocal indentkeys=0{,0},0),0],!^F,o,O,e,=end,=else,=elsif,=when,=ensure,=rescue,==begin,==end
 setlocal noinfercase
 setlocal iskeyword=@,48-57,_,192-255,#
-setlocal keywordprg=
+setlocal keywordprg=ri
 setlocal nolinebreak
 setlocal nolisp
 setlocal lispwords=
@@ -264,7 +257,7 @@ set number
 setlocal number
 setlocal numberwidth=4
 setlocal omnifunc=
-setlocal path=
+setlocal path=~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/x86_64-linux,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/x86_64-linux,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/x86_64-linux
 setlocal nopreserveindent
 setlocal nopreviewwindow
 setlocal quoteescape=\\
@@ -282,16 +275,16 @@ setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
 setlocal spellfile=
 setlocal spelllang=en
 setlocal statusline=
-setlocal suffixesadd=
+setlocal suffixesadd=.rb
 setlocal noswapfile
 setlocal synmaxcol=3000
-if &syntax != 'vim'
-setlocal syntax=vim
+if &syntax != 'ruby'
+setlocal syntax=ruby
 endif
 setlocal tabstop=2
 setlocal tagcase=
-setlocal tags=
-setlocal textwidth=78
+setlocal tags=./tags,./TAGS,tags,TAGS,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/x86_64-linux/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/x86_64-linux/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/x86_64-linux/tags
+setlocal textwidth=0
 setlocal thesaurus=
 setlocal noundofile
 setlocal undolevels=-123456
@@ -300,12 +293,12 @@ setlocal nowinfixwidth
 set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
-let s:l = 8 - ((7 * winheight(0) + 56) / 113)
+let s:l = 40 - ((39 * winheight(0) + 56) / 113)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-8
-normal! 019|
+40
+normal! 0
 wincmd w
 argglobal
 edit plugin/alternate_file.vim
@@ -440,12 +433,285 @@ setlocal nowinfixwidth
 set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
-let s:l = 51 - ((50 * winheight(0) + 56) / 113)
+let s:l = 20 - ((19 * winheight(0) + 56) / 113)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-51
-normal! 07|
+20
+normal! 0
+wincmd w
+exe 'vert 1resize ' . ((&columns * 121 + 122) / 244)
+exe 'vert 2resize ' . ((&columns * 122 + 122) / 244)
+tabedit spec/support/vim_context.rb
+set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd w
+set nosplitbelow
+set nosplitright
+wincmd t
+set winheight=1 winwidth=1
+exe 'vert 1resize ' . ((&columns * 122 + 122) / 244)
+exe 'vert 2resize ' . ((&columns * 121 + 122) / 244)
+argglobal
+nnoremap <buffer> <silent> g} :exe        "ptjump =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> } :exe          "ptag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g] :exe      "stselect =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g :exe        "stjump =RubyCursorIdentifier()"
+nnoremap <buffer> <silent>  :exe v:count1."stag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> ] :exe v:count1."stag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent>  :exe  v:count1."tag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g] :exe       "tselect =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g :exe         "tjump =RubyCursorIdentifier()"
+setlocal keymap=
+setlocal noarabic
+setlocal noautoindent
+setlocal backupcopy=
+setlocal nobinary
+setlocal nobreakindent
+setlocal breakindentopt=
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal nocindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal colorcolumn=
+setlocal comments=:#
+setlocal commentstring=#\ %s
+setlocal complete=.,w,b,u,t,i
+setlocal concealcursor=
+setlocal conceallevel=0
+setlocal completefunc=
+setlocal nocopyindent
+setlocal cryptmethod=
+setlocal nocursorbind
+setlocal nocursorcolumn
+set cursorline
+setlocal cursorline
+setlocal define=^\\s*#\\s*define
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=
+setlocal expandtab
+if &filetype != 'ruby'
+setlocal filetype=ruby
+endif
+setlocal fixendofline
+setlocal foldcolumn=0
+set nofoldenable
+setlocal nofoldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+set foldmethod=indent
+setlocal foldmethod=indent
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=croql
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=0
+setlocal imsearch=0
+setlocal include=^\\s*\\<\\(load\\>\\|require\\>\\|autoload\\s*:\\=[\"']\\=\\h\\w*[\"']\\=,\\)
+setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.rb','')
+setlocal indentexpr=GetRubyIndent(v:lnum)
+setlocal indentkeys=0{,0},0),0],!^F,o,O,e,=end,=else,=elsif,=when,=ensure,=rescue,==begin,==end
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255,#
+setlocal keywordprg=ri
+setlocal nolinebreak
+setlocal nolisp
+setlocal lispwords=
+set list
+setlocal list
+setlocal makeprg=
+setlocal matchpairs=(:),{:},[:]
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=bin,octal,hex
+set number
+setlocal number
+setlocal numberwidth=4
+setlocal omnifunc=
+setlocal path=~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/x86_64-linux,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/x86_64-linux,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/x86_64-linux
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal norelativenumber
+setlocal norightleft
+setlocal rightleftcmd=search
+setlocal noscrollbind
+setlocal shiftwidth=2
+setlocal noshortname
+setlocal nosmartindent
+setlocal softtabstop=0
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=.rb
+setlocal noswapfile
+setlocal synmaxcol=3000
+if &syntax != 'ruby'
+setlocal syntax=ruby
+endif
+setlocal tabstop=2
+setlocal tagcase=
+setlocal tags=./tags,./TAGS,tags,TAGS,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/x86_64-linux/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/x86_64-linux/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/x86_64-linux/tags
+setlocal textwidth=0
+setlocal thesaurus=
+setlocal noundofile
+setlocal undolevels=-123456
+setlocal nowinfixheight
+setlocal nowinfixwidth
+set nowrap
+setlocal nowrap
+setlocal wrapmargin=0
+let s:l = 20 - ((19 * winheight(0) + 56) / 113)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+20
+normal! 0
+wincmd w
+argglobal
+edit spec/spec_helper.rb
+nnoremap <buffer> <silent> g} :exe        "ptjump =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> } :exe          "ptag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g] :exe      "stselect =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g :exe        "stjump =RubyCursorIdentifier()"
+nnoremap <buffer> <silent>  :exe v:count1."stag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> ] :exe v:count1."stag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent>  :exe  v:count1."tag =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g] :exe       "tselect =RubyCursorIdentifier()"
+nnoremap <buffer> <silent> g :exe         "tjump =RubyCursorIdentifier()"
+setlocal keymap=
+setlocal noarabic
+setlocal noautoindent
+setlocal backupcopy=
+setlocal nobinary
+setlocal nobreakindent
+setlocal breakindentopt=
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal nocindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal colorcolumn=
+setlocal comments=:#
+setlocal commentstring=#\ %s
+setlocal complete=.,w,b,u,t,i
+setlocal concealcursor=
+setlocal conceallevel=0
+setlocal completefunc=
+setlocal nocopyindent
+setlocal cryptmethod=
+setlocal nocursorbind
+setlocal nocursorcolumn
+set cursorline
+setlocal cursorline
+setlocal define=
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=
+setlocal expandtab
+if &filetype != 'ruby'
+setlocal filetype=ruby
+endif
+setlocal fixendofline
+setlocal foldcolumn=0
+set nofoldenable
+setlocal nofoldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+set foldmethod=indent
+setlocal foldmethod=indent
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=croql
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=0
+setlocal imsearch=0
+setlocal include=^\\s*\\<\\(load\\>\\|require\\>\\|autoload\\s*:\\=[\"']\\=\\h\\w*[\"']\\=,\\)
+setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.rb','')
+setlocal indentexpr=GetRubyIndent(v:lnum)
+setlocal indentkeys=0{,0},0),0],!^F,o,O,e,=end,=else,=elsif,=when,=ensure,=rescue,==begin,==end
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255,#
+setlocal keywordprg=ri
+setlocal nolinebreak
+setlocal nolisp
+setlocal lispwords=
+set list
+setlocal list
+setlocal makeprg=
+setlocal matchpairs=(:),{:},[:]
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=bin,octal,hex
+set number
+setlocal number
+setlocal numberwidth=4
+setlocal omnifunc=
+setlocal path=~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/x86_64-linux,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/x86_64-linux,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/x86_64-linux
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal norelativenumber
+setlocal norightleft
+setlocal rightleftcmd=search
+setlocal noscrollbind
+setlocal shiftwidth=2
+setlocal noshortname
+setlocal nosmartindent
+setlocal softtabstop=0
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=.rb
+setlocal noswapfile
+setlocal synmaxcol=3000
+if &syntax != 'ruby'
+setlocal syntax=ruby
+endif
+setlocal tabstop=2
+setlocal tagcase=
+setlocal tags=./tags,./TAGS,tags,TAGS,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/2.4.0/x86_64-linux/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/site_ruby/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/2.4.0/x86_64-linux/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/vendor_ruby/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/tags,~/.rvm/rubies/ruby-2.4.0/lib/ruby/2.4.0/x86_64-linux/tags
+setlocal textwidth=0
+setlocal thesaurus=
+setlocal noundofile
+setlocal undolevels=-123456
+setlocal nowinfixheight
+setlocal nowinfixwidth
+set nowrap
+setlocal nowrap
+setlocal wrapmargin=0
+let s:l = 12 - ((11 * winheight(0) + 56) / 113)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+12
+normal! 0
 wincmd w
 exe 'vert 1resize ' . ((&columns * 122 + 122) / 244)
 exe 'vert 2resize ' . ((&columns * 121 + 122) / 244)
@@ -587,11 +853,11 @@ setlocal nowinfixwidth
 set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
-let s:l = 35 - ((34 * winheight(0) + 56) / 113)
+let s:l = 37 - ((36 * winheight(0) + 56) / 113)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-35
+37
 normal! 0
 tabedit ~/.test_runner.yaml
 set splitbelow splitright
@@ -712,11 +978,11 @@ setlocal nowinfixwidth
 set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
-let s:l = 8 - ((7 * winheight(0) + 56) / 113)
+let s:l = 6 - ((5 * winheight(0) + 56) / 113)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-8
+6
 normal! 0
 tabnext 1
 set stal=1
