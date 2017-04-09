@@ -40,5 +40,5 @@ The canonical repo for this plugin lives [here][alternate-file], NOT on github.
 It is on github only to ease use of installation via [Vundle][vundle].
 
 
-[vundle](https://github.com/gmarik/vundle)
-[alternate-file](https://www.bitbucket.org/ToadJamb/vim-alternate-file)
+[vundle]:         https://github.com/gmarik/vundle
+[alternate-file]: https://www.bitbucket.org/ToadJamb/vim-alternate-file
