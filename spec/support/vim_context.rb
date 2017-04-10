@@ -3,17 +3,16 @@ RSpec.shared_context 'plain', :plain do
 end
 
 RSpec.shared_context 'vim', :vim do
-  subject { output.first }
+  subject { output.last }
 
   let(:command) { "sid . \\\"#{fx}(#{fx_args})\\\"" }
   let(:fx_args) { nil }
   let (:output) { [] }
   let(:verbose) { false }
-  let(:args)    { '' }
 
   OUTFILE = 'spec/out.txt'
 
-  def run_command
+  def run_command(*args)
     out = run(cmd(command, args), nil, verbose, output)
     output.push(*out)
   end
@@ -22,33 +21,58 @@ RSpec.shared_context 'vim', :vim do
     remove_output
 
     vim_commands = cmd(command, args)
-    puts vim_commands if verbose
+    if verbose
+      puts '=' * 80
+      puts vim_commands
+    end
     system vim_commands
 
     send_output_to output
 
-    output[-1] = eval(output.last)
+    begin
+      output[-1] = eval(output.last)
+    rescue SyntaxError
+      puts '-' * 80
+      puts "eval could not be called on: `#{output.last}`"
+    end
 
     finis output, verbose
 
     output
   end
 
+  def to_dict(data)
+    raise 'Expected array or hash' unless [Hash, Array].include?(data.class)
+    method = "to_#{data.class.to_s.downcase}"
+    send method, data
+  end
+
   private
 
-  def to_dict(hash, string = nil)
-    string ||= '{%s}'
+  def to_hash(data)
+    raise 'Expected hash' unless data.is_a?(Hash)
 
-    string % hash.map do |k, v|
-      val =
-        if v.is_a?(Hash)
-          to_dict(v)
-        else
-          val = "'#{v}'"
-        end
+    '{%s}' % data.map do |k, v|
+      val = dict_value_for(v)
 
       "'#{k}':#{val}"
     end.join(',')
+  end
+
+  def to_array(data)
+    raise 'Expected array' unless data.is_a?(Array)
+
+    '[%s]' % data.map do |v|
+      dict_value_for(v)
+    end.join(',')
+  end
+
+  def dict_value_for(value)
+    if [Hash, Array].include?(value.class)
+      to_dict(value)
+    else
+      "'#{value}'"
+    end
   end
 
   def cmd(command = nil, args = nil)
@@ -83,7 +107,7 @@ RSpec.shared_context 'vim', :vim do
 
     args = [args] unless args.is_a?(Array)
     params = args.map do |arg|
-      if arg.is_a?(Hash)
+      if arg.is_a?(Hash) || arg.is_a?(Array)
         to_dict arg
       else
         arg
@@ -113,7 +137,7 @@ RSpec.shared_context 'vim', :vim do
     if verbose
       puts '-' * 80
       puts output
-      puts '-' * 80
+      puts '=' * 80
     end
 
     validate_output output
@@ -122,12 +146,14 @@ RSpec.shared_context 'vim', :vim do
   end
 
   def validate_output(output)
-    msg = "expected exactly one line (got #{output.count}):\n" +
+    msg = '=' * 80 + "\n" +
+      "expected exactly one line (got #{output.count}):\n" +
       cmd + "\n" +
       '-' * 80 + "\n" +
-      output.join("\n")
+      output.join("\n") + "\n" +
+      '=' * 80
 
-    puts msg if output.count != 1
+    puts msg if output.count != 1 && !verbose
     #expect(output.count).to eq(1), msg
   end
 

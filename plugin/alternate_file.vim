@@ -21,9 +21,8 @@
 let s:loaded = 0
 let g:alternate_file_config = {
 \ 'app_folders': ['app', 'src', 'lib'],
-\ 'spec_folders': ['spec', 'specs', 'test', 'tests'],
 \ 'spec': {
-\   'paths': [],
+\   'paths': ['spec', 'specs', 'test', 'tests'],
 \   'roots': [],
 \ },
 \ 'rules': {
@@ -132,34 +131,11 @@ function! s:load_config(config)
 
   let s:loaded += 1
 
-  call s:load_spec_paths(a:config)
+  call s:load_spec_paths(s:subdirs(), a:config)
 
   call s:load_project_file()
 
   let s:loaded += 1
-endfunction
-
-function s:subdirs()
-  return split(globpath(getcwd(), '*/'), '\n')
-endfunction
-
-function s:load_spec_paths(config)
-  let paths = s:subdirs()
-  let paths = filter(paths, 's:is_spec_folder(v:val)')
-
-  for path in paths
-    let root = fnamemodify(path, ':h:t')
-
-    call add(a:config.spec.paths, root . '/**')
-    call add(a:config.spec.roots, root)
-  endfor
-
-  if len(a:config.spec.paths) == 0
-    let root = '.'
-
-    call add(a:config.spec.paths, root)
-    call add(a:config.spec.roots, root)
-  endif
 endfunction
 
 function! s:load_project_file()
@@ -181,6 +157,49 @@ function! s:project_file()
   return fnamemodify(path, ':p')
 endfunction
 
-function! s:is_spec_folder(path)
-  return a:path =~? '/specs\?/$' || a:path =~? '/tests\?/$'
+
+
+
+
+
+" tested
+function s:load_spec_paths(subdirs, config)
+  let paths = filter(a:subdirs, 's:is_spec_folder(v:val, a:config.spec.paths)')
+
+  let a:config.spec.paths = []
+
+  for path in paths
+    let root = fnamemodify(path, ':h:t')
+
+    call add(a:config.spec.paths, root . '/**')
+    call add(a:config.spec.roots, root)
+  endfor
+
+  if len(a:config.spec.paths) == 0
+    let root = '.'
+
+    call add(a:config.spec.paths, root)
+    call add(a:config.spec.roots, root)
+  endif
+
+  return a:config
+endfunction
+
+" tested (loosely)
+function s:subdirs()
+  return split(globpath(getcwd(), '*/'), '\n')
+endfunction
+
+" tested
+function! s:is_spec_folder(candidate, paths)
+  let found = 0
+
+  for path in a:paths
+    if a:candidate =~? '/' . path . '/$'
+      let found = 1
+      break
+    end
+  endfor
+
+  return found
 endfunction
