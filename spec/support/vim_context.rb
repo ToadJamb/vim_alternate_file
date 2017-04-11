@@ -22,6 +22,7 @@ RSpec.shared_context 'vim', :vim do
 
     vim_commands = cmd(command, args)
     if verbose
+      puts
       puts '=' * 80
       puts vim_commands
     end

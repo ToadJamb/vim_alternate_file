@@ -24,6 +24,7 @@ let g:alternate_file_config = {
 \ 'spec': {
 \   'paths': ['spec', 'specs', 'test', 'tests'],
 \   'roots': [],
+\   'suffixes': ['spec', 'test'],
 \ },
 \ 'rules': {
 \   'base': {
@@ -132,6 +133,7 @@ function! s:load_config(config)
   let s:loaded += 1
 
   call s:load_spec_paths(s:subdirs(), a:config)
+  call s:load_spec_rules(a:config)
 
   call s:load_project_file()
 
