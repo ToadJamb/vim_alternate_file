@@ -24,23 +24,28 @@ let g:alternate_file_config = {
 \ 'spec': {
 \   'paths': ['spec', 'specs', 'test', 'tests'],
 \   'roots': [],
-\   'suffixes': ['spec', 'test'],
 \ },
 \ 'rules': {
-\   'base': {
-\     'pattern': '%f%s.%e',
-\     'suffix': '_spec',
+\   'pattern': '%f%s.%e',
+\   'suffix': '_spec',
+\
+\   '.vim': {
+\     'exts': [
+\       'rb',
+\       'vim',
+\     ],
 \   },
 \   '.es6': {
-\     'suffix': 'Spec',
 \     'exts': [
 \       'es6',
 \       'js',
 \     ],
 \   },
+\
 \   '.js': {
 \     'exts': [
 \       'js',
+\       'es6,'
 \     ],
 \   },
 \ },
@@ -77,19 +82,25 @@ let g:alternate_file_sid = s:SID()
 function! s:OpenSpec(config)
   let buffer = 'spec/' . expand('%:r') . '_spec.' . expand('%:e')
 
-  let filename = substitute(expand('%:t'), '\.' . expand('%:e'), '', '')
+  "let filename = substitute(expand('%:t'), '\.' . expand('%:e'), '', '')
+  let filename = 'alternate_file'
+  echo filename
   let specFile = filename . '_spec.*'
 
   let glob_paths = join(a:config.spec.paths, ',')
+  echo glob_paths
+  echo specFile
   let list = split(globpath(glob_paths, specFile), "\n")
+  echo 'finding...'
   for path in list
-    execute 'vsplit ' . path
+    "execute 'vsplit ' . path
+    echo path
   endfor
 
-  if len(list) == 0
-    let default = s:default_spec_file_for(config, buffer)
-    execute 'vsplit' . default
-  endif
+  "if len(list) == 0
+  "  let default = s:default_spec_file_for(config, buffer)
+  "  execute 'vsplit' . default
+  "endif
 endfunction
 
 function! s:spec_patterns_for(file, config)
@@ -162,10 +173,14 @@ endfunction
 
 
 
+function! s:spec_file_from(path, config)
+  return a:path
+endfunction
+
 
 
 " tested
-function s:load_spec_paths(subdirs, config)
+function! s:load_spec_paths(subdirs, config)
   let paths = filter(a:subdirs, 's:is_spec_folder(v:val, a:config.spec.paths)')
 
   let a:config.spec.paths = []
@@ -188,7 +203,7 @@ function s:load_spec_paths(subdirs, config)
 endfunction
 
 " tested (loosely)
-function s:subdirs()
+function! s:subdirs()
   return split(globpath(getcwd(), '*/'), '\n')
 endfunction
 

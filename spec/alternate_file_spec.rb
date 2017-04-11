@@ -36,6 +36,48 @@ RSpec.describe 'VimAlternateFile', :vim do
     end
   end
 
+  describe '.spec_file_from' do
+    #let(:fx)      { 'spec_file_from' }
+    #let(:fx_args) { "'%s', %s" }
+    let(:fx)      { 'OpenSpec' }
+    let(:fx_args) { '%s' }
+
+    let(:args) { config }
+
+    it 'works' do
+      config[:spec][:roots] = ['spec']
+      config[:spec][:paths] = ['spec/**']
+      run_command config
+    end
+
+    #shared_examples 'spec_file_from' do |path, config|
+    #  context "given subdirs are: #{dirs}" do
+    #    let(:dir_params) { dirs.map { |d| "x/#{d}/" } }
+
+    #    context "given spec paths are: #{paths}" do
+    #      before { config[:spec][:paths] = paths }
+
+    #      before { run_command dir_params, config }
+
+    #      it "returns paths: #{exp_paths} and roots: #{exp_roots}" do
+    #        expect(subject[:spec][:paths]).to match_array exp_paths
+    #        expect(subject[:spec][:roots]).to match_array exp_roots
+    #      end
+    #    end
+    #  end
+    #end
+
+    #it_behaves_like 'load_spec_paths',
+    #  ['foo', 'bar'], ['foo'],
+    #  ['foo/**'], ['foo']
+    #it_behaves_like 'load_spec_paths',
+    #  ['foo', 'bar'], ['foo', 'bar', 'fizz'],
+    #  ['foo/**', 'bar/**'], ['foo', 'bar']
+    #it_behaves_like 'load_spec_paths',
+    #  ['foo', 'bar'], ['fizz'],
+    #  ['.'], ['.']
+  end
+
   describe '.load_spec_paths' do
     let(:fx)      { 'load_spec_paths' }
     let(:fx_args) { '%s, %s' }
