@@ -13,7 +13,7 @@ RSpec.describe 'VimAlternateFile', :vim do
   end
 
   describe 'debugging' do
-    let(:fx)      { 'OpenSpec' }
+    let(:fx)      { 'open_spec' }
     let(:fx_args) { '%s' }
 
     it 'works' do

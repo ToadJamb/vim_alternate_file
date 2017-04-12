@@ -22,8 +22,8 @@ let s:loaded = 0
 let g:alternate_file_config = {
 \ 'app_folders': ['app', 'src', 'lib'],
 \ 'spec': {
-\   'paths': ['spec', 'test', 'specs', 'tests'],
-\   'roots': [],
+\   'paths': ['./**'],
+\   'roots': ['.'],
 \ },
 \ 'rules': {
 \   'pattern': '%f%s',
@@ -46,6 +46,7 @@ let g:alternate_file_config = {
 \   },
 \
 \   'js': {
+\     'suffix': '.test',
 \     'exts': [
 \       'js',
 \       'es6,'
@@ -70,33 +71,35 @@ function! OpenAlternateFile()
     return
   endif
 
-  "if s:is_spec(root)
-  "  call s:OpenClass(config)
-  "else
+  if s:is_spec(expand('%'), config)
+    echom 'opening class'
+    call s:OpenClass(config)
+  else
+    echom 'opening spec'
     call s:open_spec(config)
-  "endif
+  endif
 endfunction
 
-"function! s:is_spec(path)
-"  echom a:path
-"  return 0
-"endfunction
+function! s:is_spec(path, config)
+  return a:path =~? '_spec' || a:path =~? '.test.'
+endfunction
 
 function! s:open_spec(config)
   let file = expand('%')
-  let file = 'plugin/alternate_file.vim'
   let specFile = s:spec_file_name_for(file, '*', a:config)
 
   let glob_paths = join(a:config.spec.paths, ',')
   let list = split(globpath(glob_paths, specFile), "\n")
 
   for path in list
+    "echo path
     execute 'vsplit ' . path
   endfor
 
   if len(list) == 0
-    let path = s:default_spec_file(file, a:config)
-    execute 'vsplit' . default
+    let default = s:default_spec_file(file, a:config)
+    "echo path
+    execute 'vsplit ' . default
   endif
 endfunction
 
@@ -113,6 +116,7 @@ endfunction
 
 function! s:OpenClass(config)
   let buffer = expand('%')
+  let buffer = substitute(buffer, '\.test\.', '.', '')
   let buffer = substitute(buffer, '_spec\.', '.', '')
   let buffer = substitute(buffer, '^spec/', '', '')
 
@@ -140,8 +144,8 @@ function! s:load_config(config)
 
   let s:loaded += 1
 
-  call s:load_spec_paths(s:subdirs(), a:config)
-  call s:load_spec_rules(a:config)
+  "call s:load_spec_paths(s:subdirs(), a:config)
+  "call s:load_spec_rules(a:config)
 
   call s:load_project_file()
 
