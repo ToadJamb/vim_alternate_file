@@ -4,12 +4,21 @@ require 'pp'
 require 'deep_clone'
 
 RSpec.describe 'VimAlternateFile', :vim do
-  let(:verbose) { true }
+  #let(:verbose) { true }
   let(:config) { DeepClone.clone @config }
 
   before(:all) do
     out = run("'g:alternate_file_config'")
     @config = out.last
+  end
+
+  describe 'debugging' do
+    let(:fx)      { 'OpenSpec' }
+    let(:fx_args) { '%s' }
+
+    it 'works' do
+      run_command config
+    end
   end
 
   describe '.confg' do
@@ -34,48 +43,114 @@ RSpec.describe 'VimAlternateFile', :vim do
         end
       end
     end
+
+    #describe '.rules' do
+    #  subject { config[:rules] }
+
+    #  it 'has the expected keys' do
+    #    expect(subject.keys).to match_array [:pattern, :suffix]
+    #  end
+
+    #  #describe '.paths' do
+    #  #  subject { config[:spec][:paths] }
+
+    #  #  it 'has the expected default values' do
+    #  #    expect(subject).to match_array ['spec', 'specs', 'test', 'tests']
+    #  #  end
+    #  #end
+    #end
   end
 
-  describe '.spec_file_from' do
-    #let(:fx)      { 'spec_file_from' }
-    #let(:fx_args) { "'%s', %s" }
-    let(:fx)      { 'OpenSpec' }
-    let(:fx_args) { '%s' }
+  describe '.default_spec_file' do
+    let(:fx)      { 'default_spec_file' }
+    let(:fx_args) { "'%s', %s" }
 
-    let(:args) { config }
+    shared_examples 'default_spec_file' do |file, roots, paths, expected|
+      context "given a file #{file}" do
+        context "given roots #{roots}" do
+          before { config[:spec][:roots] = roots }
 
-    it 'works' do
-      config[:spec][:roots] = ['spec']
-      config[:spec][:paths] = ['spec/**']
-      run_command config
+          context "given path specs of #{paths}" do
+            before { config[:rules][:paths] = paths }
+
+            before { run_command file, config }
+
+            it "returns #{expected}" do
+              expect(subject).to eq expected
+            end
+          end
+        end
+      end
     end
 
-    #shared_examples 'spec_file_from' do |path, config|
-    #  context "given subdirs are: #{dirs}" do
-    #    let(:dir_params) { dirs.map { |d| "x/#{d}/" } }
+    it_behaves_like 'default_spec_file', 'app/models/foo.rb', ['spec'], {
+      '^app/' => '..',
+    }, 'spec/../app/models/foo_spec.rb'
+    it_behaves_like 'default_spec_file', 'lib/my_lib/models/foo.rb', ['spec'], {
+      '^lib/my_lib/' => '../..',
+    }, 'spec/../../lib/my_lib/models/foo_spec.rb'
+    it_behaves_like 'default_spec_file', 'lib/my_lib/models/foo.rb', ['.'], {
+    }, './lib/my_lib/models/foo_spec.rb'
+  end
 
-    #    context "given spec paths are: #{paths}" do
-    #      before { config[:spec][:paths] = paths }
+  describe '.spec_file_name_for' do
+    let(:fx)      { 'spec_file_name_for' }
+    let(:fx_args) { "'%s', '%s', %s" }
 
-    #      before { run_command dir_params, config }
+    shared_examples 'spec_file_name_for' do |path,ext,pattern,suffix,expected|
+      context "given the file path is: #{path}" do
+        let(:path_ext) { File.extname(path)[1..-1] }
 
-    #      it "returns paths: #{exp_paths} and roots: #{exp_roots}" do
-    #        expect(subject[:spec][:paths]).to match_array exp_paths
-    #        expect(subject[:spec][:roots]).to match_array exp_roots
-    #      end
-    #    end
-    #  end
-    #end
+        context "given the extension is #{ext}" do
+          context "given the pattern is #{pattern}" do
+            before { config[:rules][:pattern] = pattern }
 
-    #it_behaves_like 'load_spec_paths',
-    #  ['foo', 'bar'], ['foo'],
-    #  ['foo/**'], ['foo']
-    #it_behaves_like 'load_spec_paths',
-    #  ['foo', 'bar'], ['foo', 'bar', 'fizz'],
-    #  ['foo/**', 'bar/**'], ['foo', 'bar']
-    #it_behaves_like 'load_spec_paths',
-    #  ['foo', 'bar'], ['fizz'],
-    #  ['.'], ['.']
+            context "given the suffix is #{suffix}" do
+              context 'given the suffix is set at the root' do
+                before { config[:rules][:suffix] = suffix }
+
+                context 'given the suffix is set for the extension' do
+                  before { config[:rules][:suffix] = 'x' + ext + 'x' }
+
+                  before { config[:rules][path_ext.to_sym] ||= {} }
+                  before { config[:rules][path_ext.to_sym][:suffix] = suffix }
+
+                  it "returns #{expected}" do
+                    run_command path, ext, config
+                    expect(subject).to eq expected
+                  end
+                end
+
+                context 'given the suffix is not set for the extension' do
+                  before { expect(config[:rules][path_ext.to_sym]).to eq nil }
+
+                  it "returns #{expected}" do
+                    run_command path, ext, config
+                    expect(subject).to eq expected
+                  end
+
+                  context 'given the extension has other settings' do
+                    before { config[:rules][path_ext.to_sym] ||= {} }
+
+                    it "returns #{expected}" do
+                      run_command path, ext, config
+                      expect(subject).to eq expected
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    it_behaves_like 'spec_file_name_for',
+      'path/to/my_file.foo', 'bar', '%f%s', 'sPec', 'my_filesPec.bar'
+    it_behaves_like 'spec_file_name_for',
+      'path/to/my_file.foo', 'bar', '%s%f', 'sPec', 'sPecmy_file.bar'
+    it_behaves_like 'spec_file_name_for',
+      'path/to/stuff.c', 'h', '%f%s', '.tEst', 'stuff.tEst.h'
   end
 
   describe '.load_spec_paths' do

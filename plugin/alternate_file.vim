@@ -22,27 +22,30 @@ let s:loaded = 0
 let g:alternate_file_config = {
 \ 'app_folders': ['app', 'src', 'lib'],
 \ 'spec': {
-\   'paths': ['spec', 'specs', 'test', 'tests'],
+\   'paths': ['spec', 'test', 'specs', 'tests'],
 \   'roots': [],
 \ },
 \ 'rules': {
-\   'pattern': '%f%s.%e',
+\   'pattern': '%f%s',
 \   'suffix': '_spec',
 \
-\   '.vim': {
+\   'paths': {
+\   },
+\
+\   'vim': {
 \     'exts': [
 \       'rb',
 \       'vim',
 \     ],
 \   },
-\   '.es6': {
+\   'es6': {
 \     'exts': [
 \       'es6',
 \       'js',
 \     ],
 \   },
 \
-\   '.js': {
+\   'js': {
 \     'exts': [
 \       'js',
 \       'es6,'
@@ -50,6 +53,12 @@ let g:alternate_file_config = {
 \   },
 \ },
 \}
+
+function! s:SID()
+  let fullname = expand('<sfile>')
+  return matchstr(fullname, '<SNR>\d\+_')
+endfunction
+let g:alternate_file_sid = s:SID()
 
 function! OpenAlternateFile()
   let root = substitute(expand('%:h'), '/.*', '', '')
@@ -64,7 +73,7 @@ function! OpenAlternateFile()
   "if s:is_spec(root)
   "  call s:OpenClass(config)
   "else
-    call s:OpenSpec(config)
+    call s:open_spec(config)
   "endif
 endfunction
 
@@ -73,34 +82,22 @@ endfunction
 "  return 0
 "endfunction
 
-function! s:SID()
-  let fullname = expand('<sfile>')
-  return matchstr(fullname, '<SNR>\d\+_')
-endfunction
-let g:alternate_file_sid = s:SID()
-
-function! s:OpenSpec(config)
-  let buffer = 'spec/' . expand('%:r') . '_spec.' . expand('%:e')
-
-  "let filename = substitute(expand('%:t'), '\.' . expand('%:e'), '', '')
-  let filename = 'alternate_file'
-  echo filename
-  let specFile = filename . '_spec.*'
+function! s:open_spec(config)
+  let file = expand('%')
+  let file = 'plugin/alternate_file.vim'
+  let specFile = s:spec_file_name_for(file, '*', a:config)
 
   let glob_paths = join(a:config.spec.paths, ',')
-  echo glob_paths
-  echo specFile
   let list = split(globpath(glob_paths, specFile), "\n")
-  echo 'finding...'
+
   for path in list
-    "execute 'vsplit ' . path
-    echo path
+    execute 'vsplit ' . path
   endfor
 
-  "if len(list) == 0
-  "  let default = s:default_spec_file_for(config, buffer)
-  "  execute 'vsplit' . default
-  "endif
+  if len(list) == 0
+    let path = s:default_spec_file(file, a:config)
+    execute 'vsplit' . default
+  endif
 endfunction
 
 function! s:spec_patterns_for(file, config)
@@ -170,14 +167,41 @@ function! s:project_file()
   return fnamemodify(path, ':p')
 endfunction
 
+" tested
+function! s:default_spec_file(file, config)
+  let spec = a:file
+  let file = s:spec_file_name_for(a:file, fnamemodify(a:file, ':e'), a:config)
 
+  for path in items(a:config.rules.paths)
+    let key = path[0]
+    let root = path[1]
 
+    if spec =~? key
+      let spec = root . '/' . spec
+      break
+    end
+  endfor
 
-function! s:spec_file_from(path, config)
-  return a:path
+  let spec = a:config.spec.roots[0] . '/' . spec
+
+  return fnamemodify(spec, ':h') . '/' . file
 endfunction
 
+" tested
+function! s:spec_file_name_for(path, ext, config)
+  let file = fnamemodify(a:path, ':t')
+  let fext = fnamemodify(file, ':e')
+  let file = substitute(file, '.' . fext, '', '')
 
+  let exts = get(a:config.rules, fext, a:config.rules)
+  let suffix = get(exts, 'suffix', a:config.rules.suffix)
+
+  let file = substitute(a:config.rules.pattern, '%f', file, '')
+  let file = substitute(file, '%s', suffix, '')
+  let file = file . '.' . a:ext
+
+  return file
+endfunction
 
 " tested
 function! s:load_spec_paths(subdirs, config)

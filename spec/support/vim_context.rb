@@ -32,9 +32,11 @@ RSpec.shared_context 'vim', :vim do
 
     begin
       output[-1] = eval(output.last)
-    rescue SyntaxError
-      puts '-' * 80
-      puts "eval could not be called on: `#{output.last}`"
+    rescue Exception => e
+      if verbose
+        puts '-' * 80
+        puts "#{e.class}: eval could not be called on: `#{output.last}`"
+      end
     end
 
     finis output, verbose
