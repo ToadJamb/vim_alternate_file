@@ -12,9 +12,21 @@ RSpec.shared_context 'vim', :vim do
 
   OUTFILE = 'spec/out.txt'
 
+  after do
+    errors = output.any? do |line|
+      line.is_a?(String) &&
+        (line.match(/error/i) ||
+        line.match(/^E\d.*:/))
+    end
+
+    msg = ''
+    msg = output.join("\n") unless verbose
+
+    expect(errors).to eq(false), msg
+  end
+
   def run_command(*args)
-    out = run(cmd(command, args), nil, verbose, output)
-    output.push(*out)
+    run cmd(command, args), nil, verbose, output
   end
 
   def run(command, args = nil, verbose = nil, output = [])
@@ -143,12 +155,12 @@ RSpec.shared_context 'vim', :vim do
       puts '=' * 80
     end
 
-    validate_output output
+    validate_output output, verbose
 
     remove_instance_variable :@cmd
   end
 
-  def validate_output(output)
+  def validate_output(output, verbose)
     msg = '=' * 80 + "\n" +
       "expected exactly one line (got #{output.count}):\n" +
       cmd + "\n" +
