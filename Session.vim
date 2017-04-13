@@ -161,6 +161,8 @@ badd +1 Gemfile
 badd +2 spec/assumptions_spec.rb
 badd +1 spec/support/deep_clone.rb
 badd +0 .cane
+badd +2 ~/.vimrc
+badd +7 ~/.vim_alternate_file.dashboard.vim
 argglobal
 silent! argdel *
 argadd plugin/alternate_file.vim
@@ -299,12 +301,12 @@ setlocal nowinfixwidth
 set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
-let s:l = 18 - ((17 * winheight(0) + 56) / 113)
+let s:l = 157 - ((85 * winheight(0) + 56) / 113)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-18
-normal! 0
+157
+normal! 022|
 wincmd w
 argglobal
 edit plugin/alternate_file.vim
@@ -439,14 +441,13 @@ setlocal nowinfixwidth
 set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
-let s:l = 71 - ((70 * winheight(0) + 56) / 113)
+let s:l = 201 - ((112 * winheight(0) + 56) / 113)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-71
+201
 normal! 0
 wincmd w
-2wincmd w
 exe 'vert 1resize ' . ((&columns * 121 + 122) / 244)
 exe 'vert 2resize ' . ((&columns * 122 + 122) / 244)
 tabedit spec/assumptions_spec.rb
@@ -713,11 +714,11 @@ setlocal nowinfixwidth
 set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
-let s:l = 44 - ((36 * winheight(0) + 56) / 113)
+let s:l = 22 - ((21 * winheight(0) + 56) / 113)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-44
+22
 normal! 0
 wincmd w
 exe 'vert 1resize ' . ((&columns * 121 + 122) / 244)

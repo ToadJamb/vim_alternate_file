@@ -98,10 +98,10 @@ function! OpenAlternateFile()
   endif
 
   if s:is_spec(expand('%'), config)
-    echom 'opening class'
+    "echom 'opening class'
     call s:OpenClass(config)
   else
-    echom 'opening spec'
+    "echom 'opening spec'
     call s:open_spec(expand('%'), config)
   endif
 endfunction
@@ -141,12 +141,12 @@ function! s:OpenClass(config)
 
   for root in a:config.spec.roots
     let root = '^' . root . '\/'
-    echo root
+    "echo root
 
     if path =~? root
-      echo 'subbing root....'
+      "echo 'subbing root....'
       let path = substitute(path, root, '', '')
-      echo path
+      "echo path
       break
     endif
   endfor
@@ -157,11 +157,11 @@ function! s:OpenClass(config)
   let glob_paths = '.,' . join(s:config.app.roots, '/**,') . '/**'
   let files = split(globpath(glob_paths, path), "\n")
 
-  echo glob_paths
-  echo path
+  "echo glob_paths
+  "echo path
 
   for file in reverse(files)
-    echo file
+    "echo file
     execute 'vsplit ' . file
   endfor
 
@@ -206,7 +206,7 @@ function! s:load_file(path)
     return
   endif
 
-  echo a:path
+  "echo a:path
 
   execute 'source ' . a:path
 endfunction
