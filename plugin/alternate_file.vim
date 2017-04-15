@@ -233,10 +233,10 @@ function! s:default_spec_file(file, config)
 
   let file = s:spec_file_names_for(a:file, '', a:config)[0]
 
-  let paths = get(a:config.spec.rules, 'paths', {})
-  for path in items(paths)
-    let key = path[0]
-    let root = path[1]
+  let spec_paths = get(a:config.spec.rules, 'paths', {})
+  for spec_path in items(spec_paths)
+    let key  = spec_path[0]
+    let root = spec_path[1]
 
     if spec =~? key
       let spec = root . '/' . spec
@@ -253,7 +253,7 @@ endfunction
 function! s:spec_file_names_for(path, ext, config)
   let file = fnamemodify(a:path, ':t')
   let fext = fnamemodify(file, ':e')
-  let file = substitute(file, '.' . fext, '', '')
+  let file = substitute(file, '\.' . fext, '', '')
 
   let exts = get(a:config.spec.rules, fext, a:config)
   let suffixes = get(exts, 'suffixes', a:config.suffixes)

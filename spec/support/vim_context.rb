@@ -42,6 +42,17 @@ RSpec.shared_context 'vim', :vim do
 
     send_output_to output
 
+    #if verbose
+    #  output.each do |line|
+    #    begin
+    #      obj = eval(line)
+    #      puts '*' * 80
+    #      pp obj
+    #    rescue Exception
+    #    end
+    #  end
+    #end
+
     begin
       output[-1] = eval(output.last)
     rescue Exception => e

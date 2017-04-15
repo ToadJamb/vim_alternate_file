@@ -34,20 +34,20 @@ RSpec.describe 'VimAlternateFile', :vim do
     config[:spec][:rules][:paths] = paths
   end
 
-  describe 'debugging' do
-    describe '.open_spec' do
-      let(:fx)      { 'open_spec' }
-      let(:fx_args) { "'%s', %s" }
+  #describe 'debugging' do
+  #  describe '.open_spec' do
+  #    let(:fx)      { 'open_spec' }
+  #    let(:fx_args) { "'%s', %s" }
 
-      before { set_base_suffixes ['_spec'] }
-      before { set_spec_roots ['spec'] }
-      before { set_spec_paths ['spec/**'] }
+  #    before { set_base_suffixes ['_spec'] }
+  #    before { set_spec_roots ['spec'] }
+  #    before { set_spec_paths ['spec/**'] }
 
-      it 'works' do
-        run_command 'plugin/alternate_file.vim', config
-      end
-    end
-  end
+  #    it 'works' do
+  #      run_command 'plugin/alternate_file.vim', config
+  #    end
+  #  end
+  #end
 
   describe '.config' do
     subject { config }
@@ -56,7 +56,7 @@ RSpec.describe 'VimAlternateFile', :vim do
       expect(config.keys).to match_array [
         :pattern,
         :suffixes,
-        :skipConfig,
+        :skip_config,
         :app,
         :spec,
       ]
@@ -238,6 +238,8 @@ RSpec.describe 'VimAlternateFile', :vim do
       'path/to/stuff.js', '*', '%f%s',
       ['.tEst', '_teSt'],
       ['stuff.tEst.*', 'stuff_teSt.*']
+    it_behaves_like 'spec_file_names_for',
+      'lib/my_lib/irb.rb', '', '%f%s', ['_spec'], ['irb_spec.rb']
   end
 
   describe '.load_spec_paths' do
