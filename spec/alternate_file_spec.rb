@@ -333,4 +333,39 @@ RSpec.describe 'VimAlternateFile', :vim do
 
     it_behaves_like 'is_spec_folder', 'x/foo/', ['foo', 'test'], 1
   end
+
+  #describe '.spec_folders_for' do
+  #  let(:fx)      { 'spec_folders_for' }
+  #  let(:fx_args) { "'%s', %s" }
+
+  #  shared_examples 'spec_folders_for' do |buffer, config, expected|
+  #    context "given a buffer of #{buffer.inspect}" do
+  #      context "given a config: #{config.inspect}" do
+  #        before { run_command buffer, config}
+
+  #        it "returns #{expected.inspect}" do
+  #          expect(subject).to eq expected
+  #        end
+  #      end
+  #    end
+  #  end
+
+  #  #it_behaves_like 'spec_folders_for',
+  #  #  'hm/lib/hm/foo.exs',
+  #  #  {
+  #  #    :spec => {
+  #  #      :paths => ['foo/bar'],
+  #  #    },
+  #  #  },
+  #  #  ['foo/bar']
+  #  it_behaves_like 'spec_folders_for',
+  #    'plugin/alternate_file.vim',
+  #    {
+  #      :spec => {
+  #        :roots => ['spec', 'test', 'specs', 'tests'],
+  #        :paths => ['foo/bar'],
+  #      },
+  #    },
+  #    ['foo/bar']
+  #end
 end

@@ -50,6 +50,11 @@ let g:alternate_file_config = {
 \   'paths': [],
 \   'roots': [],
 \   'rules': {
+\     'ex': {
+\       'exts': [
+\         'exs',
+\       ],
+\     },
 \   },
 \ },
 \}
@@ -102,13 +107,14 @@ function! OpenAlternateFile()
     call s:OpenClass(config)
   else
     "echom 'opening spec'
-    call s:open_spec(expand('%'), config)
+    call s:open_spec(expand('%'), s:config, config)
   endif
 endfunction
 
-function! s:open_spec(buffer, config)
+function! s:open_spec(buffer, default, config)
   let spec_patterns = s:spec_file_names_for(a:buffer, '*', a:config)
-  let glob_paths    = join(a:config.spec.paths, ',')
+  "let glob_paths    = join(a:config.spec.paths, ',')
+  let glob_paths    = join(s:spec_folders_for(a:buffer, a:default, a:config), ',')
   let files         = []
 
   for spec_pattern in spec_patterns
@@ -123,6 +129,33 @@ function! s:open_spec(buffer, config)
     let default = s:default_spec_file(a:buffer, a:config)
     execute 'vsplit ' . default
   endif
+endfunction
+
+function! s:spec_folders_for(buffer, default, config)
+  let pwd = getcwd()
+  "let buffer = a:buffer
+
+  let subs = split(a:buffer, '/')
+  let path = '.'
+  let paths = []
+
+  for sub in subs
+    let subdirs = s:subdirs(path)
+    let paths = filter(subdirs, 's:is_spec_folder(v:val, a:default.spec.roots)')
+
+    if len(paths) > 0
+      echom join(paths, ',')
+      return paths
+    endif
+
+    let path .= '/' . sub
+
+    if path == a:buffer
+      break
+    endif
+  endfor
+
+  return a:config.spec.paths
 endfunction
 
 function! s:OpenClass(config)
@@ -194,7 +227,7 @@ function! s:load_config(config)
   call s:load_file(s:project_file(s:root_directory()))
 
   if !a:config.skip_config
-    call s:load_spec_paths(s:subdirs(), s:config, a:config)
+    call s:load_spec_paths(s:subdirs(''), s:config, a:config)
   endif
 
   let s:loaded += 1
@@ -257,6 +290,7 @@ function! s:spec_file_names_for(path, ext, config)
 
   let exts = get(a:config.spec.rules, fext, a:config)
   let suffixes = get(exts, 'suffixes', a:config.suffixes)
+  let exts = get(exts, 'exts', [fext])
 
   let file = substitute(a:config.pattern, '%f', file, '')
 
@@ -265,8 +299,10 @@ function! s:spec_file_names_for(path, ext, config)
   if a:ext == '*'
     for suffix in suffixes
       let spec = substitute(file, '%s', suffix, '')
-      let spec .= '.' . a:ext
-      call add(files, spec)
+      for ext in exts
+        let candidate = spec . '.' . ext
+        call add(files, candidate)
+      endfor
     endfor
   else
     let spec = substitute(file, '%s', suffixes[0], '')
@@ -301,8 +337,14 @@ function! s:load_spec_paths(subdirs, default, config)
 endfunction
 
 " tested (loosely)
-function! s:subdirs()
-  return split(globpath(getcwd(), '*/'), '\n')
+function! s:subdirs(path)
+  let path = a:path
+
+  if path == ''
+    let path = getcwd()
+  endif
+
+  return split(globpath(path, '*/'), '\n')
 endfunction
 
 " tested
