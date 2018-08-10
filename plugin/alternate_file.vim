@@ -118,7 +118,7 @@ function! s:open_spec(buffer, default, config)
   let files         = []
 
   for spec_pattern in spec_patterns
-    let files += split(globpath(glob_paths, spec_pattern), "\n")
+    let files += split(globpath(glob_paths, '**/' . spec_pattern), "\n")
   endfor
 
   for file in reverse(files)
